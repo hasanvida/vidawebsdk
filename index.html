@@ -1,22 +1,22 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <title>VIDA eKYC Demo</title>
 
-  <!-- VIDA Web SDK (Sandbox – correct one) -->
+  <!-- VIDA Web SDK (Sandbox) -->
   <script src="https://web-sdk.vida.id/1.1.0/sandbox/vida-web-sdk.js"></script>
 
   <style>
     body {
-      font-family: "Segoe UI", Arial, sans-serif;
-      background: #f2f4f8;
       margin: 0;
       padding: 40px;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: #f3f5f9;
       color: #1f2937;
     }
 
-    .container {
+    .layout {
       max-width: 1200px;
       margin: auto;
       display: grid;
@@ -26,25 +26,32 @@
 
     .card {
       background: #ffffff;
-      border-radius: 10px;
-      padding: 20px;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    h1 {
+      font-size: 22px;
+      margin-top: 0;
+      margin-bottom: 16px;
     }
 
     h2 {
+      font-size: 16px;
       margin-top: 0;
-      font-size: 18px;
-      margin-bottom: 16px;
+      margin-bottom: 12px;
     }
 
     button {
       width: 100%;
-      padding: 12px;
-      margin-bottom: 12px;
-      border-radius: 6px;
+      padding: 14px;
+      border-radius: 8px;
       border: none;
       font-size: 14px;
+      font-weight: 600;
       cursor: pointer;
+      margin-bottom: 12px;
     }
 
     .btn-primary {
@@ -53,12 +60,7 @@
     }
 
     .btn-secondary {
-      background: #6b7280;
-      color: #fff;
-    }
-
-    .btn-warning {
-      background: #f59e0b;
+      background: #111827;
       color: #fff;
     }
 
@@ -66,34 +68,39 @@
       min-height: 420px;
     }
 
-    #log-box {
-      margin-top: 16px;
+    .result-box {
+      margin-top: 20px;
       background: #0b1220;
-      color: #22c55e;
+      color: #e5e7eb;
+      border-radius: 8px;
+      padding: 16px;
       font-size: 12px;
-      padding: 12px;
-      border-radius: 6px;
-      height: 180px;
-      overflow-y: auto;
       white-space: pre-wrap;
+      max-height: 260px;
+      overflow-y: auto;
+      display: none;
+    }
+
+    .result-title {
+      margin-top: 24px;
+      font-weight: 600;
+      font-size: 14px;
     }
   </style>
 </head>
 
 <body>
 
-<div class="container">
+<div class="layout">
 
   <!-- LEFT PANEL -->
   <div class="card">
+    <h1>VIDA eKYC Demo</h1>
+
     <h2>Verification Options</h2>
 
     <button class="btn-primary" onclick="startDocumentOnly()">
       Document Verification Only
-    </button>
-
-    <button class="btn-warning" onclick="startLivenessOnly()">
-      Liveness Only
     </button>
 
     <button class="btn-secondary" onclick="startFullVerification()">
@@ -101,52 +108,50 @@
     </button>
 
     <p style="font-size:12px;color:#6b7280;margin-top:12px;">
-      * Liveness-only is not supported in VIDA Web SDK.
+      Document-only flow excludes liveness and face match.
     </p>
   </div>
 
   <!-- RIGHT PANEL -->
   <div class="card">
-    <h2>VIDA SDK</h2>
+    <h2>Verification Session</h2>
+
     <div id="sdk-container"></div>
-    <div id="log-box"></div>
+
+    <div class="result-title">Result</div>
+    <div id="result-box" class="result-box"></div>
   </div>
 
 </div>
 
 <script>
-  function log(msg) {
-    console.log(msg);
-    const box = document.getElementById("log-box");
-    box.innerHTML += msg + "\n";
-    box.scrollTop = box.scrollHeight;
+  function clearUI() {
+    document.getElementById("sdk-container").innerHTML = "";
+    document.getElementById("result-box").style.display = "none";
+    document.getElementById("result-box").innerHTML = "";
+  }
+
+  function showResult(data) {
+    const box = document.getElementById("result-box");
+    box.style.display = "block";
+    box.textContent = JSON.stringify(data, null, 2);
   }
 
   async function fetchToken() {
-    log("Fetching token...");
     const res = await fetch("/.netlify/functions/get-token");
     const data = await res.json();
-
     if (!data.access_token) {
-      throw new Error("Token not received");
+      throw new Error("Token generation failed");
     }
-
-    log("Token received");
     return data;
   }
 
-  function clearSDK() {
-    document.getElementById("sdk-container").innerHTML = "";
-  }
-
   /* =========================
-     OPTION 1: DOCUMENT ONLY
+     DOCUMENT VERIFICATION ONLY
      ========================= */
   async function startDocumentOnly() {
     try {
-      log("Starting: Document Verification Only");
-      clearSDK();
-
+      clearUI();
       const data = await fetchToken();
 
       VidaSDK.init({
@@ -159,7 +164,7 @@
 
         workflowConfigs: {
           identityVerification: {
-            skipFaceMatch: true,   // ✅ key for document-only
+            skipFaceMatch: true,
 
             userConsent: {
               obtained: true,
@@ -173,40 +178,26 @@
           }
         },
 
-        onComplete: (res) => {
-          log("✅ Document verification completed");
-          log(JSON.stringify(res, null, 2));
+        onComplete: (result) => {
+          showResult(result);
         },
 
-        onError: (err) => {
-          log("❌ Error");
-          log(JSON.stringify(err, null, 2));
+        onError: (error) => {
+          showResult(error);
         }
       });
 
     } catch (e) {
-      log("ERROR: " + e.message);
+      showResult({ error: e.message });
     }
   }
 
   /* =========================
-     OPTION 2: LIVENESS ONLY
-     ========================= */
-  function startLivenessOnly() {
-    clearSDK();
-    log("⚠️ Liveness-only is NOT supported in VIDA Web SDK.");
-    log("Reason: Liveness is tied to Face Match inside Identity Verification.");
-    log("Please use Full Verification instead.");
-  }
-
-  /* =========================
-     OPTION 3: FULL VERIFICATION
+     FULL VERIFICATION
      ========================= */
   async function startFullVerification() {
     try {
-      log("Starting: Full Verification");
-      clearSDK();
-
+      clearUI();
       const data = await fetchToken();
 
       VidaSDK.init({
@@ -236,19 +227,17 @@
           }
         },
 
-        onComplete: (res) => {
-          log("✅ Full verification completed");
-          log(JSON.stringify(res, null, 2));
+        onComplete: (result) => {
+          showResult(result);
         },
 
-        onError: (err) => {
-          log("❌ Error");
-          log(JSON.stringify(err, null, 2));
+        onError: (error) => {
+          showResult(error);
         }
       });
 
     } catch (e) {
-      log("ERROR: " + e.message);
+      showResult({ error: e.message });
     }
   }
 </script>
