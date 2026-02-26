@@ -1,103 +1,257 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<!DOCTYPE html>
 <html>
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <meta http-equiv="Content-Style-Type" content="text/css">
-  <title></title>
-  <meta name="Generator" content="Cocoa HTML Writer">
-  <meta name="CocoaVersion" content="2575.7">
-  <style type="text/css">
-    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
-    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; min-height: 14.0px}
+  <meta charset="UTF-8" />
+  <title>VIDA eKYC Demo</title>
+
+  <!-- VIDA Web SDK (Sandbox – correct one) -->
+  <script src="https://web-sdk.vida.id/1.1.0/sandbox/vida-web-sdk.js"></script>
+
+  <style>
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: #f2f4f8;
+      margin: 0;
+      padding: 40px;
+      color: #1f2937;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: auto;
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 24px;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    }
+
+    h2 {
+      margin-top: 0;
+      font-size: 18px;
+      margin-bottom: 16px;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 12px;
+      border-radius: 6px;
+      border: none;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: #0d6efd;
+      color: #fff;
+    }
+
+    .btn-secondary {
+      background: #6b7280;
+      color: #fff;
+    }
+
+    .btn-warning {
+      background: #f59e0b;
+      color: #fff;
+    }
+
+    #sdk-container {
+      min-height: 420px;
+    }
+
+    #log-box {
+      margin-top: 16px;
+      background: #0b1220;
+      color: #22c55e;
+      font-size: 12px;
+      padding: 12px;
+      border-radius: 6px;
+      height: 180px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+    }
   </style>
 </head>
+
 <body>
-<p class="p1">&lt;!DOCTYPE html&gt;</p>
-<p class="p1">&lt;html lang="en"&gt;</p>
-<p class="p1">&lt;head&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;meta charset="UTF-8" /&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;title&gt;VIDA Liveness Demo&lt;/title&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;style&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>body { font-family: Arial; padding: 20px; background: #fafafa; }</p>
-<p class="p1"><span class="Apple-converted-space">      </span>.card {</p>
-<p class="p1"><span class="Apple-converted-space">          </span>max-width: 500px; margin: auto; padding: 20px;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>background: white; border-radius: 10px;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>box-shadow: 0px 2px 10px rgba(0,0,0,0.1);</p>
-<p class="p1"><span class="Apple-converted-space">      </span>}</p>
-<p class="p1"><span class="Apple-converted-space">      </span>input, button { width: 100%; padding: 12px; margin-top: 10px; }</p>
-<p class="p1"><span class="Apple-converted-space">      </span>button { background: #006bff; color:white; border:none; border-radius:6px; }</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;/style&gt;</p>
-<p class="p1">&lt;/head&gt;</p>
-<p class="p2"><br></p>
-<p class="p1">&lt;body&gt;</p>
-<p class="p2"><br></p>
-<p class="p1">&lt;div class="card"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;h2&gt;VIDA Liveness Web SDK&lt;/h2&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;label&gt;Bearer Token&lt;/label&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;input id="token" placeholder="Enter Bearer Token" /&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;label&gt;Signing Key&lt;/label&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;input id="signKey" placeholder="Enter Signing Key" /&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;button id="startBtn"&gt;Start Liveness&lt;/button&gt;</p>
-<p class="p1">&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1">&lt;div id="sdk-container" style="margin-top: 20px;"&gt;&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1">&lt;!-- Put script here: BOTTOM of body --&gt;</p>
-<p class="p1">&lt;script&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>function loadVidaSdk(callback) {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const script = document.createElement("script");</p>
-<p class="p1"><span class="Apple-converted-space">        </span>script.src = "https://web-sdk.vida.id/1.0.5/sandbox/vida-web-sdk.js";</p>
-<p class="p1"><span class="Apple-converted-space">        </span>script.onload = callback;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>script.onerror = () =&gt; alert("Failed to load VIDA SDK");</p>
-<p class="p1"><span class="Apple-converted-space">        </span>document.head.appendChild(script);</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>function startLiveness() {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const token = document.getElementById("token").value.trim();</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const signingKey = document.getElementById("signKey").value.trim();</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (!token || !signingKey) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>alert("Please input token + signing key");</p>
-<p class="p1"><span class="Apple-converted-space">            </span>return;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>loadVidaSdk(() =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>if (!window.VidaSDK) {</p>
-<p class="p1"><span class="Apple-converted-space">                </span>alert("VIDA SDK not loaded");</p>
-<p class="p1"><span class="Apple-converted-space">                </span>return;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>console.log("SDK Loaded, initializing...");</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">            </span>window.VidaSDK.init({</p>
-<p class="p1"><span class="Apple-converted-space">                </span>token,</p>
-<p class="p1"><span class="Apple-converted-space">                </span>signingKey,</p>
-<p class="p1"><span class="Apple-converted-space">                </span>elementId: "sdk-container",</p>
-<p class="p1"><span class="Apple-converted-space">                </span>locale: "EN",</p>
-<p class="p1"><span class="Apple-converted-space">                </span>partnerTransactionId: crypto.randomUUID(),</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">                </span>onComplete: (data) =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>console.log("Liveness Completed:", data);</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>alert("Liveness Completed! Check console.");</p>
-<p class="p1"><span class="Apple-converted-space">                </span>},</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">                </span>onError: (error) =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>console.error("Error:", error);</p>
-<p class="p1"><span class="Apple-converted-space">                    </span>alert("Error occurred. Check console.");</p>
-<p class="p1"><span class="Apple-converted-space">                </span>}</p>
-<p class="p1"><span class="Apple-converted-space">            </span>});</p>
-<p class="p1"><span class="Apple-converted-space">        </span>});</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>// Attach click handler after functions defined</p>
-<p class="p1"><span class="Apple-converted-space">    </span>document.getElementById("startBtn").addEventListener("click", startLiveness);</p>
-<p class="p1">&lt;/script&gt;</p>
-<p class="p2"><br></p>
-<p class="p1">&lt;/body&gt;</p>
-<p class="p1">&lt;/html&gt;</p>
+
+<div class="container">
+
+  <!-- LEFT PANEL -->
+  <div class="card">
+    <h2>Verification Options</h2>
+
+    <button class="btn-primary" onclick="startDocumentOnly()">
+      Document Verification Only
+    </button>
+
+    <button class="btn-warning" onclick="startLivenessOnly()">
+      Liveness Only
+    </button>
+
+    <button class="btn-secondary" onclick="startFullVerification()">
+      Full Verification
+    </button>
+
+    <p style="font-size:12px;color:#6b7280;margin-top:12px;">
+      * Liveness-only is not supported in VIDA Web SDK.
+    </p>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="card">
+    <h2>VIDA SDK</h2>
+    <div id="sdk-container"></div>
+    <div id="log-box"></div>
+  </div>
+
+</div>
+
+<script>
+  function log(msg) {
+    console.log(msg);
+    const box = document.getElementById("log-box");
+    box.innerHTML += msg + "\n";
+    box.scrollTop = box.scrollHeight;
+  }
+
+  async function fetchToken() {
+    log("Fetching token...");
+    const res = await fetch("/.netlify/functions/get-token");
+    const data = await res.json();
+
+    if (!data.access_token) {
+      throw new Error("Token not received");
+    }
+
+    log("Token received");
+    return data;
+  }
+
+  function clearSDK() {
+    document.getElementById("sdk-container").innerHTML = "";
+  }
+
+  /* =========================
+     OPTION 1: DOCUMENT ONLY
+     ========================= */
+  async function startDocumentOnly() {
+    try {
+      log("Starting: Document Verification Only");
+      clearSDK();
+
+      const data = await fetchToken();
+
+      VidaSDK.init({
+        token: data.access_token,
+        signingKey: data.signing_key,
+        elementId: "sdk-container",
+        workflow: "identity-verification",
+        countryCode: "IDN",
+        locale: "EN",
+
+        workflowConfigs: {
+          identityVerification: {
+            skipFaceMatch: true,   // ✅ key for document-only
+
+            userConsent: {
+              obtained: true,
+              obtainedAt: Date.now(),
+            },
+
+            docVerification: {
+              skipDocBackSideCapture: true,
+              maxRetryAttempts: 3,
+            }
+          }
+        },
+
+        onComplete: (res) => {
+          log("✅ Document verification completed");
+          log(JSON.stringify(res, null, 2));
+        },
+
+        onError: (err) => {
+          log("❌ Error");
+          log(JSON.stringify(err, null, 2));
+        }
+      });
+
+    } catch (e) {
+      log("ERROR: " + e.message);
+    }
+  }
+
+  /* =========================
+     OPTION 2: LIVENESS ONLY
+     ========================= */
+  function startLivenessOnly() {
+    clearSDK();
+    log("⚠️ Liveness-only is NOT supported in VIDA Web SDK.");
+    log("Reason: Liveness is tied to Face Match inside Identity Verification.");
+    log("Please use Full Verification instead.");
+  }
+
+  /* =========================
+     OPTION 3: FULL VERIFICATION
+     ========================= */
+  async function startFullVerification() {
+    try {
+      log("Starting: Full Verification");
+      clearSDK();
+
+      const data = await fetchToken();
+
+      VidaSDK.init({
+        token: data.access_token,
+        signingKey: data.signing_key,
+        elementId: "sdk-container",
+        workflow: "identity-verification",
+        countryCode: "IDN",
+        locale: "EN",
+
+        workflowConfigs: {
+          identityVerification: {
+            userConsent: {
+              obtained: true,
+              obtainedAt: Date.now(),
+            },
+
+            docVerification: {
+              skipDocBackSideCapture: true,
+              maxRetryAttempts: 3,
+            },
+
+            faceMatch: {
+              maxRetryAttempts: 3,
+              detectionTimeOut: 90000,
+            }
+          }
+        },
+
+        onComplete: (res) => {
+          log("✅ Full verification completed");
+          log(JSON.stringify(res, null, 2));
+        },
+
+        onError: (err) => {
+          log("❌ Error");
+          log(JSON.stringify(err, null, 2));
+        }
+      });
+
+    } catch (e) {
+      log("ERROR: " + e.message);
+    }
+  }
+</script>
+
 </body>
 </html>
